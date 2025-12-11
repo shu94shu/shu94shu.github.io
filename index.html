@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>研究生谈心谈话重点对象游戏化普查问卷</title>
     <style>
-        /* 保持原样式不变 */
+        /* 样式保持不变，仅调整成就图标相关样式 */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -233,11 +233,16 @@
         }
         .achievement.unlocked {
             display: flex;
+            animation: bounceIn 0.5s ease;
         }
-        .achievement img {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
+        @keyframes bounceIn {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        /* 新增成就图标样式，替换原图片样式 */
+        .achievement-icon {
+            font-size: 2.5em;
             margin-bottom: 8px;
         }
         .achievement h4 {
@@ -340,7 +345,6 @@
             margin-top: 5px;
             display: none;
         }
-        /* 提交成功样式 */
         .submit-success-screen {
             text-align: center;
             padding: 40px 20px;
@@ -382,7 +386,7 @@
             <div id="info-screen" class="screen">
                 <div class="info-screen">
                     <h2 style="text-align: center; color: #2c3e50; margin-bottom: 25px;">角色创建</h2>
-                    <p style="text-align: center; margin-bottom: 25px; color: #555;">请填写基本信息，创建你的校园生存角色</p>
+                    <p style="text-align: center; margin-bottom: 25px; color: #555;">请填写基本信息，创建你的校园生存角色（填写完成即可获得20分基础分）</p>
                     
                     <div class="info-form">
                         <div class="form-group">
@@ -450,6 +454,7 @@
                             <p><strong>身份：</strong> <span id="preview-role">上大萌新鼠（状态待定）</span></p>
                             <p><strong>宗门师承：</strong> <span id="preview-college-major">未设置</span></p>
                             <p><strong>年级：</strong> <span id="preview-grade">未设置</span></p>
+                            <p><strong>当前得分：</strong> <span id="base-score">0</span>（基础分）</p>
                         </div>
                         
                         <div class="next-btn-container">
@@ -464,7 +469,7 @@
                 <div class="question-screen">
                     <div class="stage-indicator">
                         <span>关卡: <span id="current-stage">1</span>/9</span>
-                        <span>得分: <span id="current-score">0</span></span>
+                        <span>得分: <span id="current-score">20</span></span>
                     </div>
                     <div class="progress-container">
                         <div class="progress-bar" id="progress-bar"></div>
@@ -478,7 +483,7 @@
                 </div>
             </div>
 
-            <!-- 结算屏幕 -->
+            <!-- 结算屏幕 - 成就替换为Unicode图标 -->
             <div id="result-screen" class="screen">
                 <div class="result-screen">
                     <h2>闯关结算：生存等级与得分报告</h2>
@@ -492,28 +497,34 @@
                     
                     <h3 style="color: #2c3e50; margin: 25px 0 15px;">你获得的成就</h3>
                     <div class="achievements">
+                        <!-- 家庭和睦星 - 🏠 -->
                         <div class="achievement" id="family-achievement">
-                            <img src="https://bailian-bmp-pre.oss-cn-hangzhou.aliyuncs.com/public/system_agent/PlaceHolder.png" alt="家庭和睦星">
+                            <span class="achievement-icon">🏠</span>
                             <h4>家庭和睦星</h4>
                         </div>
+                        <!-- 思想领航员 - 📚 -->
                         <div class="achievement" id="ideology-achievement">
-                            <img src="https://bailian-bmp-pre.oss-cn-hangzhou.aliyuncs.com/public/system_agent/PlaceHolder.png" alt="思想领航员">
+                            <span class="achievement-icon">📚</span>
                             <h4>思想领航员</h4>
                         </div>
+                        <!-- 科研大佬 - 🔬 -->
                         <div class="achievement" id="research-achievement">
-                            <img src="https://bailian-bmp-pre.oss-cn-hangzhou.aliyuncs.com/public/system_agent/PlaceHolder.png" alt="科研大佬">
+                            <span class="achievement-icon">🔬</span>
                             <h4>科研大佬</h4>
                         </div>
+                        <!-- 导学默契王 - 🤝 -->
                         <div class="achievement" id="mentor-achievement">
-                            <img src="https://bailian-bmp-pre.oss-cn-hangzhou.aliyuncs.com/public/system_agent/PlaceHolder.png" alt="导学默契王">
+                            <span class="achievement-icon">🤝</span>
                             <h4>导学默契王</h4>
                         </div>
+                        <!-- 人际小太阳 - ☀️ -->
                         <div class="achievement" id="social-achievement">
-                            <img src="https://bailian-bmp-pre.oss-cn-hangzhou.aliyuncs.com/public/system_agent/PlaceHolder.png" alt="人际小太阳">
+                            <span class="achievement-icon">☀️</span>
                             <h4>人际小太阳</h4>
                         </div>
+                        <!-- 职业规划师 - 📈 -->
                         <div class="achievement" id="career-achievement">
-                            <img src="https://bailian-bmp-pre.oss-cn-hangzhou.aliyuncs.com/public/system_agent/PlaceHolder.png" alt="职业规划师">
+                            <span class="achievement-icon">📈</span>
                             <h4>职业规划师</h4>
                         </div>
                     </div>
@@ -538,16 +549,18 @@
     </div>
 
     <script>
-        // 游戏数据定义 - 修复了最后一个问题的闭合问题
+        // 游戏数据定义 - 100分制分值体系
         const quizData = [
             {
                 id: 'family',
-                title: '第一关：家庭港湾（家庭关系维度・维度分 5分)',
+                title: '第一关：家庭港湾（家庭关系维度・维度分 7分)',
+                achievement: '家庭和睦星',
+                achievementId: 'family-achievement',
                 questions: [
                     {
                         text: '最近家里是否出现 "剧情反转"？',
                         options: [
-                            { text: '🏡 岁月静好：无任何变故', score: 3, risk: 0, icon: '🏡' },
+                            { text: '🏡 岁月静好：无任何变故', score: 4, risk: 0, icon: '🏡' },
                             { text: '🌊 小波澜：有小变化但"问题不大"', score: 1, risk: 0, icon: '🌊' },
                             { text: '🌪️ 大风暴：有重大变故，感觉"天都要塌了"', score: 0, risk: 3, icon: '🌪️' }
                         ]
@@ -555,24 +568,25 @@
                     {
                         text: '你和父母的聊天模式是？',
                         options: [
-                            { text: '📱 无话不谈：每天都要 "视频通话"', score: 2, risk: 0, icon: '📱' },
+                            { text: '📱 无话不谈：每天都要 "视频通话"', score: 3, risk: 0, icon: '📱' },
                             { text: '📅 偶尔联系：节日问候，"报喜不报忧"', score: 1, risk: 0, icon: '📅' },
                             { text: '🔇 基本不聊："话不投机半句多"', score: 0, risk: 0, icon: '🔇' }
                         ]
                     }
-                ],
-                achievement: '家庭和睦星'
+                ]
             },
             {
                 id: 'ideology',
-                title: '第二关：思想领航（思想政治维度・维度分 8分)',
+                title: '第二关：思想领航（思想政治维度・维度分 10分)',
+                achievement: '思想领航员',
+                achievementId: 'ideology-achievement',
                 questions: [
                     {
                         text: '如果理论学习是一场直播，你是哪种观众？',
                         options: [
                             { text: '🚶‍♀️ 从不看直播，直接划走', score: 0, risk: 0, icon: '🚶‍♀️' },
                             { text: '🕐 偶尔路过，停留几秒', score: 1, risk: 0, icon: '🕐' },
-                            { text: '✅ 定期打卡，准时签到', score: 3, risk: 0, icon: '✅' }
+                            { text: '✅ 定期打卡，准时签到', score: 4, risk: 0, icon: '✅' }
                         ]
                     },
                     {
@@ -586,22 +600,23 @@
                     {
                         text: '你是否曾在网上发表过让自己 "社死" 的言论？',
                         options: [
-                            { text: '🏄 从来没有，我是 "网上冲浪小能手"', score: 2, risk: 0, icon: '🏄' },
+                            { text: '🏄 从来没有，我是 "网上冲浪小能手"', score: 3, risk: 0, icon: '🏄' },
                             { text: '😅 有过一次，现在想想 "脚趾抠出三室一厅"', score: 1, risk: 0, icon: '😅' },
                             { text: '🫣 多次，已经 "没脸见人" 了', score: 0, risk: 0, icon: '🫣' }
                         ]
                     }
-                ],
-                achievement: '思想领航员'
+                ]
             },
             {
                 id: 'research',
-                title: '第三关：科研打怪（学习科研维度・维度分 8分 + 风险扣分关联)',
+                title: '第三关：科研打怪（学习科研维度・维度分 10分)',
+                achievement: '科研大佬',
+                achievementId: 'research-achievement',
                 questions: [
                     {
                         text: '如果科研是一场游戏，你现在卡在第几关？',
                         options: [
-                            { text: '🎉 第一关：新手村，一切顺利', score: 3, risk: 0, icon: '🎉' },
+                            { text: '🎉 第一关：新手村，一切顺利', score: 4, risk: 0, icon: '🎉' },
                             { text: '🛠️ 中间关卡：有点难度，但还能 "肝"', score: 1, risk: 0, icon: '🛠️' },
                             { text: '🚫 最终 BOSS：完全打不过，想 "删号重练"', score: 0, risk: 0, icon: '🚫' }
                         ]
@@ -617,22 +632,23 @@
                     {
                         text: '最近你的实验 / 论文是否遇到了 "玄学" 问题？',
                         options: [
-                            { text: '📜 没有，一切按 "剧本" 走', score: 2, risk: 0, icon: '📜' },
+                            { text: '📜 没有，一切按 "剧本" 走', score: 3, risk: 0, icon: '📜' },
                             { text: '🔄 偶尔有，需要 "重启" 一下', score: 1, risk: 0, icon: '🔄' },
                             { text: '🧟 经常有，感觉被 "诅咒" 了', score: 0, risk: 0, icon: '🧟' }
                         ]
                     }
-                ],
-                achievement: '科研大佬'
+                ]
             },
             {
                 id: 'mentor',
-                title: '第四关：导师联动（导学关系维度・维度分 8分)',
+                title: '第四关：导师联动（导学关系维度・维度分 10分)',
+                achievement: '导学默契王',
+                achievementId: 'mentor-achievement',
                 questions: [
                     {
                         text: '你和导师的聊天框是什么状态？',
                         options: [
-                            { text: '💬 消息刷屏，每周≥2 次沟通', score: 3, risk: 0, icon: '💬' },
+                            { text: '💬 消息刷屏，每周≥2 次沟通', score: 4, risk: 0, icon: '💬' },
                             { text: '📅 偶尔冒泡，每月 1-2 次沟通', score: 1, risk: 0, icon: '📅' },
                             { text: '🚫 已读不回，几乎不沟通', score: 0, risk: 0, icon: '🚫' }
                         ]
@@ -648,22 +664,23 @@
                     {
                         text: '你的导师是哪种 "类型"？',
                         options: [
-                            { text: '🏅 金牌教练：指导超详细，"手把手" 教学', score: 2, risk: 0, icon: '🏅' },
+                            { text: '🏅 金牌教练：指导超详细，"手把手" 教学', score: 3, risk: 0, icon: '🏅' },
                             { text: '📝 普通导师：有指导，但需要自己 "悟"', score: 1, risk: 0, icon: '📝' },
                             { text: '🕵️ 神秘导师：基本见不到，像在 "玩失踪"', score: 0, risk: 0, icon: '🕵️' }
                         ]
                     }
-                ],
-                achievement: '导学默契王'
+                ]
             },
             {
                 id: 'social',
-                title: '第五关：人际组队（人际交往维度・维度分 8分)',
+                title: '第五关：人际组队（人际交往维度・维度分 10分)',
+                achievement: '人际小太阳',
+                achievementId: 'social-achievement',
                 questions: [
                     {
                         text: '用一种天气形容你的寝室关系，是哪一种？',
                         options: [
-                            { text: '☀️ 晴天：阳光普照，和谐融洽', score: 3, risk: 0, icon: '☀️' },
+                            { text: '☀️ 晴天：阳光普照，和谐融洽', score: 4, risk: 0, icon: '☀️' },
                             { text: '⛅ 多云：偶尔阴天，很快放晴', score: 1, risk: 0, icon: '⛅' },
                             { text: '🌧️ 暴雨：经常 "电闪雷鸣"，想 "逃离"', score: 0, risk: 2, icon: '🌧️' }
                         ]
@@ -679,22 +696,21 @@
                     {
                         text: '最近你是否经历过 "人际关系危机"？',
                         options: [
-                            { text: '🛡️ 没有，我的人际关系 "稳如老狗"', score: 2, risk: 0, icon: '🛡️' },
+                            { text: '🛡️ 没有，我的人际关系 "稳如老狗"', score: 3, risk: 0, icon: '🛡️' },
                             { text: '🧩 有一点小问题，但能自己解决', score: 1, risk: 0, icon: '🧩' },
                             { text: '💔 问题严重，感觉要 "绝交" 了', score: 0, risk: 0, icon: '💔' }
                         ]
                     }
-                ],
-                achievement: '人际小太阳'
+                ]
             },
             {
                 id: 'mental',
-                title: '第六关：心情续航（心理健康维度・维度分 12分+核心风险扣分）',
+                title: '第六关：心情续航（心理健康维度・维度分 15分)',
                 questions: [
                     {
                         text: '最近你的 "心情天气"是什么样？',
                         options: [
-                            { text: '☀ 晴天：积极稳定，正能量满满', score: 4, risk: 0, icon: '☀' },
+                            { text: '☀ 晴天：积极稳定，正能量满满', score: 5, risk: 0, icon: '☀' },
                             { text: '⛅ 多云：偶尔低落/焦虑，很快恢复', score: 1, risk: 0, icon: '⛅' },
                             { text: '🟥 雨天：持续 emo，感觉 "开心不起来"', score: 0, risk: 5, icon: '🌧️' }
                         ]
@@ -702,7 +718,7 @@
                     {
                         text: '你是否有睡眠障碍、自我否定等心理 "小症状"？',
                         options: [
-                            { text: '🛡️ 没有，我是 "心理健康小卫士"', score: 4, risk: 0, icon: '🛡️' },
+                            { text: '🛡️ 没有，我是 "心理健康小卫士"', score: 5, risk: 0, icon: '🛡️' },
                             { text: '⚠️ 偶尔出现，"小问题不影响"', score: 1, risk: 0, icon: '⚠️' },
                             { text: '🏥 频繁出现，感觉需要 "看医生"', score: 0, risk: 0, icon: '🏥' }
                         ]
@@ -710,7 +726,7 @@
                     {
                         text: '生活难捱时，你是否有过 "想彻底躺平"的念头？',
                         options: [
-                            { text: '💪 坚强战士：从来没有', score: 4, risk: 0, icon: '💪' },
+                            { text: '💪 坚强战士：从来没有', score: 5, risk: 0, icon: '💪' },
                             { text: '😴 短暂疲惫：偶尔闪过但很快清醒', score: 1, risk: 0, icon: '😴' },
                             { text: '🚨 红色警报：频繁出现，感觉 "撑不下去"', score: 0, risk: 10, icon: '🚨' }
                         ]
@@ -720,12 +736,14 @@
             },
             {
                 id: 'career',
-                title: '第七关：职业探路（职业发展维度・维度分 8分)',
+                title: '第七关：职业探路（职业发展维度・维度分 10分)',
+                achievement: '职业规划师',
+                achievementId: 'career-achievement',
                 questions: [
                     {
                         text: '你的人生剧本杀，职业线解锁到哪一幕？',
                         options: [
-                            { text: '📜 第一幕：规划清晰且有行动', score: 3, risk: 0, icon: '📜' },
+                            { text: '📜 第一幕：规划清晰且有行动', score: 4, risk: 0, icon: '📜' },
                             { text: '🚧 第二幕：有初步规划但无行动', score: 1, risk: 0, icon: '🚧' },
                             { text: '❓ 第三幕：空白剧本，完全无规划', score: 0, risk: 0, icon: '❓' }
                         ]
@@ -741,22 +759,21 @@
                     {
                         text: '你是否错过了 "上岸"关键窗口期？',
                         options: [
-                            { text: '🎯 没有，我是 "offer收割机"', score: 2, risk: 0, icon: '🎯' },
+                            { text: '🎯 没有，我是 "offer收割机"', score: 3, risk: 0, icon: '🎯' },
                             { text: '⏳ 错过了一次，但还有机会', score: 1, risk: 0, icon: '⏳' },
                             { text: '❌ 全错过了，感觉要 "失业"', score: 0, risk: 2, icon: '❌' }
                         ]
                     }
-                ],
-                achievement: '职业规划师'
+                ]
             },
             {
                 id: 'risk',
-                title: '第八关：风险排查（重点关注维度・维度分 6分)',
+                title: '第八关：风险排查（重点关注维度・维度分 8分)',
                 questions: [
                     {
                         text: '你是否有过 "违规操作"被警告的经历？',
                         options: [
-                            { text: '🎓 三好学生：无任何处分', score: 3, risk: 0, icon: '🎓' },
+                            { text: '🎓 三好学生：无任何处分', score: 4, risk: 0, icon: '🎓' },
                             { text: '⚠️ 一次警告：曾有单次处分', score: 1, risk: 0, icon: '⚠️' },
                             { text: '🚫 黑名单：多次违纪', score: 0, risk: 3, icon: '🚫' }
                         ]
@@ -764,7 +781,7 @@
                     {
                         text: '你是 "神秘失踪人口"吗？',
                         options: [
-                            { text: '📍 按时打卡：校内住宿，可随时联系', score: 3, risk: 0, icon: '📍' },
+                            { text: '📍 按时打卡：校内住宿，可随时联系', score: 4, risk: 0, icon: '📍' },
                             { text: '📱 偶尔失联：校外住宿但能联系上', score: 1, risk: 0, icon: '📱' },
                             { text: '🐉 神龙见首不见尾：长期校外住宿且难联系', score: 0, risk: 0, icon: '🐉' }
                         ]
@@ -850,22 +867,22 @@
 
         // 初始化事件监听
         function initEventListeners() {
-            // 开始按钮
             buttons.start.addEventListener('click', () => {
                 switchScreen('info');
             });
 
-            // 信息页下一步按钮
             buttons.infoNext.addEventListener('click', () => {
                 if (validateInfoForm()) {
                     saveUserInfo();
+                    gameState.totalScore = 20;
+                    document.getElementById('base-score').textContent = '20';
+                    document.getElementById('current-score').textContent = '20';
                     updateCharacterPreview();
                     switchScreen('question');
                     loadStage(gameState.currentStage);
                 }
             });
 
-            // 问题页下一步按钮
             buttons.next.addEventListener('click', () => {
                 saveStageAnswers();
                 gameState.currentStage++;
@@ -877,52 +894,38 @@
                 }
             });
 
-            // 提交数据按钮
             buttons.submitData.addEventListener('click', () => {
-                // 这里添加数据提交逻辑
                 switchScreen('submitSuccess');
             });
 
-            // 重新开始按钮
             buttons.restart.addEventListener('click', resetGame);
-
-            // 返回首页按钮
             buttons.backToHome.addEventListener('click', resetGame);
 
-            // 性别选择
             document.querySelectorAll('.gender-option').forEach(option => {
                 option.addEventListener('click', function() {
-                    document.querySelectorAll('.gender-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
+                    document.querySelectorAll('.gender-option').forEach(opt => opt.classList.remove('selected'));
                     this.classList.add('selected');
                     validateInfoForm();
                 });
             });
 
-            // 信息表单输入监听
             document.getElementById('student-id').addEventListener('input', validateInfoForm);
             document.getElementById('name').addEventListener('input', validateInfoForm);
             document.getElementById('grade').addEventListener('change', validateInfoForm);
             document.getElementById('teacher').addEventListener('input', validateInfoForm);
             document.getElementById('major').addEventListener('input', validateInfoForm);
             
-            // 角色预览更新
             document.getElementById('grade').addEventListener('change', updateCharacterPreview);
             document.getElementById('teacher').addEventListener('input', updateCharacterPreview);
             document.getElementById('major').addEventListener('input', updateCharacterPreview);
         }
 
-        // 切换屏幕
         function switchScreen(screenName) {
-            Object.keys(screens).forEach(key => {
-                screens[key].classList.remove('active');
-            });
+            Object.keys(screens).forEach(key => screens[key].classList.remove('active'));
             screens[screenName].classList.add('active');
             gameState.currentScreen = screenName;
         }
 
-        // 验证信息表单
         function validateInfoForm() {
             let isValid = true;
             const studentId = document.getElementById('student-id').value;
@@ -932,7 +935,6 @@
             const major = document.getElementById('major').value;
             const genderSelected = document.querySelector('.gender-option.selected') !== null;
 
-            // 验证学号
             if (studentId.length !== 8 || isNaN(studentId)) {
                 document.getElementById('student-id-error').style.display = 'block';
                 isValid = false;
@@ -940,7 +942,6 @@
                 document.getElementById('student-id-error').style.display = 'none';
             }
 
-            // 验证姓名
             if (!name.trim()) {
                 document.getElementById('name-error').style.display = 'block';
                 isValid = false;
@@ -948,7 +949,6 @@
                 document.getElementById('name-error').style.display = 'none';
             }
 
-            // 验证性别
             if (!genderSelected) {
                 document.getElementById('gender-error').style.display = 'block';
                 isValid = false;
@@ -956,7 +956,6 @@
                 document.getElementById('gender-error').style.display = 'none';
             }
 
-            // 验证年级
             if (!grade) {
                 document.getElementById('grade-error').style.display = 'block';
                 isValid = false;
@@ -964,7 +963,6 @@
                 document.getElementById('grade-error').style.display = 'none';
             }
 
-            // 验证导师
             if (!teacher.trim()) {
                 document.getElementById('teacher-error').style.display = 'block';
                 isValid = false;
@@ -972,7 +970,6 @@
                 document.getElementById('teacher-error').style.display = 'none';
             }
 
-            // 验证专业
             if (!major.trim()) {
                 document.getElementById('major-error').style.display = 'block';
                 isValid = false;
@@ -980,12 +977,10 @@
                 document.getElementById('major-error').style.display = 'none';
             }
 
-            // 启用/禁用下一步按钮
             buttons.infoNext.disabled = !isValid;
             return isValid;
         }
 
-        // 保存用户信息
         function saveUserInfo() {
             gameState.userInfo = {
                 studentId: document.getElementById('student-id').value,
@@ -997,7 +992,6 @@
             };
         }
 
-        // 更新角色预览
         function updateCharacterPreview() {
             const grade = document.getElementById('grade').value;
             const teacher = document.getElementById('teacher').value;
@@ -1032,17 +1026,14 @@
             document.getElementById('preview-grade').textContent = gradeText;
         }
 
-        // 加载关卡
         function loadStage(stageIndex) {
             const stage = quizData[stageIndex];
             document.getElementById('stage-title').textContent = stage.title;
             document.getElementById('current-stage').textContent = stageIndex + 1;
             
-            // 更新进度条
             const progress = ((stageIndex + 1) / quizData.length) * 100;
             document.getElementById('progress-bar').style.width = `${progress}%`;
             
-            // 加载问题
             const questionsContainer = document.getElementById('questions-container');
             questionsContainer.innerHTML = '';
             
@@ -1078,7 +1069,6 @@
                     labelEl.appendChild(textEl);
                     optionEl.appendChild(labelEl);
                     
-                    // 如果是需要输入的选项，添加输入框
                     if (option.input) {
                         const inputEl = document.createElement('textarea');
                         inputEl.className = 'hidden-input';
@@ -1089,26 +1079,19 @@
                         optionEl.appendChild(inputEl);
                     }
                     
-                    // 添加点击事件
                     optionEl.addEventListener('click', function() {
                         if (question.isMultiple) {
-                            // 多选题逻辑
                             this.classList.toggle('selected');
                         } else {
-                            // 单选题逻辑
                             optionsContainer.querySelectorAll('.option').forEach(opt => {
                                 opt.classList.remove('selected');
-                                // 隐藏其他选项的输入框
                                 const input = opt.querySelector('.hidden-input');
                                 if (input) input.style.display = 'none';
                             });
                             this.classList.add('selected');
-                            
-                            // 显示当前选项的输入框（如果有）
                             const input = this.querySelector('.hidden-input');
                             if (input) input.style.display = 'block';
                         }
-                        
                         checkStageCompletion(stageIndex);
                     });
                     
@@ -1119,7 +1102,6 @@
                 questionsContainer.appendChild(questionEl);
             });
             
-            // 显示关卡提示（如果有）
             const noteContainer = document.getElementById('note-container');
             if (stage.note) {
                 noteContainer.textContent = stage.note;
@@ -1128,11 +1110,9 @@
                 noteContainer.style.display = 'none';
             }
             
-            // 禁用下一步按钮
             buttons.next.disabled = true;
         }
 
-        // 检查关卡是否完成
         function checkStageCompletion(stageIndex) {
             const stage = quizData[stageIndex];
             let isComplete = true;
@@ -1141,22 +1121,15 @@
                 const selectedOptions = document.querySelectorAll(`.question[data-index="${qIndex}"] .option.selected, .question[data-index="${qIndex}"] .multi-option.selected`);
                 
                 if (question.isMultiple) {
-                    // 多选题至少选择一个
-                    if (selectedOptions.length === 0) {
-                        isComplete = false;
-                    }
+                    if (selectedOptions.length === 0) isComplete = false;
                 } else {
-                    // 单选题必须选择一个
-                    if (selectedOptions.length !== 1) {
-                        isComplete = false;
-                    }
+                    if (selectedOptions.length !== 1) isComplete = false;
                 }
             });
             
             buttons.next.disabled = !isComplete;
         }
 
-        // 保存关卡答案
         function saveStageAnswers() {
             const stage = quizData[gameState.currentStage];
             const stageAnswers = [];
@@ -1164,11 +1137,7 @@
             let stageRisk = 0;
             
             stage.questions.forEach((question, qIndex) => {
-                const questionAnswers = {
-                    question: question.text,
-                    selections: []
-                };
-                
+                const questionAnswers = { question: question.text, selections: [] };
                 const selectedOptions = document.querySelectorAll(`.question[data-index="${qIndex}"] .option.selected, .question[data-index="${qIndex}"] .multi-option.selected`);
                 
                 selectedOptions.forEach(option => {
@@ -1181,17 +1150,14 @@
                         risk: selectedOption.risk
                     };
                     
-                    // 如果有输入内容，保存输入值
                     if (selectedOption.input) {
                         const input = option.querySelector('.hidden-input');
-                        if (input) {
-                            selection.input = input.value;
-                        }
+                        if (input) selection.input = input.value;
                     }
                     
                     questionAnswers.selections.push(selection);
-                    stageScore += selectedOption.score;
-                    stageRisk += selectedOption.risk;
+                    stageScore += Number(selectedOption.score) || 0;
+                    stageRisk += Number(selectedOption.risk) || 0;
                 });
                 
                 stageAnswers.push(questionAnswers);
@@ -1203,26 +1169,18 @@
             document.getElementById('current-score').textContent = gameState.totalScore;
         }
 
-        // 计算结果
         function calculateResult() {
-            document.getElementById('final-score').textContent = gameState.totalScore;
+            const finalScore = Math.min(gameState.totalScore, 100);
+            document.getElementById('final-score').textContent = finalScore;
             
-            // 计算生存等级
             let survivalLevel;
-            if (gameState.totalScore >= 45) {
-                survivalLevel = 'SSS级生存大师';
-            } else if (gameState.totalScore >= 35) {
-                survivalLevel = 'SS级生存高手';
-            } else if (gameState.totalScore >= 25) {
-                survivalLevel = 'S级生存达人';
-            } else if (gameState.totalScore >= 15) {
-                survivalLevel = 'A级生存者';
-            } else {
-                survivalLevel = 'B级生存者';
-            }
+            if (finalScore >= 90) survivalLevel = 'SSS级生存大师';
+            else if (finalScore >= 80) survivalLevel = 'SS级生存高手';
+            else if (finalScore >= 70) survivalLevel = 'S级生存达人';
+            else if (finalScore >= 60) survivalLevel = 'A级生存者';
+            else survivalLevel = 'B级生存者';
             document.getElementById('survival-level').textContent = survivalLevel;
             
-            // 生成报告
             let reportText = '';
             if (gameState.totalRisk > 10) {
                 reportText += '你的校园生存挑战中遇到了一些较大的困难，建议及时与辅导员或心理老师沟通。';
@@ -1231,34 +1189,31 @@
             } else {
                 reportText += '恭喜你！你的校园生活状态良好，继续保持哦！';
             }
-            
             reportText += ' 学校会根据你的情况提供相应的支持和帮助。';
             document.getElementById('report-text').textContent = reportText;
             
-            // 解锁成就
             quizData.forEach((stage, index) => {
-                if (stage.achievement) {
-                    // 简单的成就解锁逻辑：该关卡得分率超过60%
-                    const stageScore = gameState.answers[index].reduce((sum, q) => {
-                        return sum + q.selections.reduce((qSum, s) => qSum + s.score, 0);
-                    }, 0);
-                    
-                    const maxStageScore = stage.questions.reduce((sum, q) => {
-                        return sum + q.options.reduce((oSum, o) => Math.max(oSum, o.score), 0);
-                    }, 0);
-                    
-                    if (maxStageScore > 0 && (stageScore / maxStageScore) > 0.6) {
-                        const achievementId = stage.achievement.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-achievement';
-                        const achievementEl = document.getElementById(achievementId);
-                        if (achievementEl) {
-                            achievementEl.classList.add('unlocked');
+                if (stage.achievementId && gameState.answers[index]) {
+                    try {
+                        const stageScore = gameState.answers[index].reduce((sum, q) => {
+                            return sum + q.selections.reduce((qSum, s) => qSum + (Number(s.score) || 0), 0);
+                        }, 0);
+                        
+                        const maxStageScore = stage.questions.reduce((sum, q) => {
+                            return sum + q.options.reduce((oSum, o) => Math.max(oSum, Number(o.score) || 0), 0);
+                        }, 0);
+                        
+                        if (maxStageScore > 0 && (stageScore / maxStageScore) > 0.6) {
+                            const achievementEl = document.getElementById(stage.achievementId);
+                            if (achievementEl) achievementEl.classList.add('unlocked');
                         }
+                    } catch (e) {
+                        console.log(`成就解锁计算错误（关卡${index+1}）：`, e);
                     }
                 }
             });
         }
 
-        // 重置游戏
         function resetGame() {
             gameState.currentStage = 0;
             gameState.totalScore = 0;
@@ -1266,34 +1221,24 @@
             gameState.userInfo = {};
             gameState.answers = {};
             
-            // 重置表单
             document.getElementById('student-id').value = '';
             document.getElementById('name').value = '';
             document.getElementById('grade').value = '';
             document.getElementById('teacher').value = '';
             document.getElementById('major').value = '';
-            document.querySelectorAll('.gender-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
+            document.querySelectorAll('.gender-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('base-score').textContent = '0';
+            document.getElementById('current-score').textContent = '0';
             updateCharacterPreview();
             
-            // 重置分数显示
-            document.getElementById('current-score').textContent = '0';
-            
-            // 重置成就
-            document.querySelectorAll('.achievement').forEach(ach => {
-                ach.classList.remove('unlocked');
-            });
-            
+            document.querySelectorAll('.achievement').forEach(ach => ach.classList.remove('unlocked'));
             switchScreen('start');
         }
 
-        // 初始化游戏
         function initGame() {
             initEventListeners();
         }
 
-        // 启动游戏
         window.addEventListener('DOMContentLoaded', initGame);
     </script>
 </body>
